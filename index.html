@@ -44,7 +44,7 @@ button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
  .info{padding:48px 20px 13px}.bottom{left:auto;right:10px;top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;background:#09090d99;border-radius:18px}
  .top{padding-top:9px}
 }
-</style>
+.media-link{display:block;width:100%;height:100%;position:relative}.play-badge{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.68);color:#fff;padding:13px 20px;border-radius:999px;font-weight:700;font-size:15px;white-space:nowrap;border:1px solid rgba(255,255,255,.35)}</style>
 </head>
 <body>
 <div id="age"><div class="panel"><div style="font-size:34px">🔞</div><h1>AV SAMPLE FEED</h1><p class="muted">18歳以上の方を対象とした、公式に提供されたサンプル作品の閲覧用アプリです。</p><p class="muted">あなたは18歳以上ですか？</p><div class="row" style="margin-top:18px"><button class="primary" id="yes">18歳以上</button><button class="secondary" id="no">いいえ</button></div></div></div>
@@ -99,7 +99,7 @@ function safeHttp(s){try{return new URL(s).protocol==='https:'}catch{return fals
 function mediaMarkup(x){
  if(x.video&&safeHttp(x.video)&&/\.(mp4|webm)(\?|#|$)/i.test(x.video))
   return `<video class="media" src="${esc(x.video)}" ${x.image?`poster="${esc(x.image)}"`:''} muted playsinline loop preload="metadata"></video>`;
- if(x.video&&safeHttp(x.video))return `<iframe class="media" src="${esc(x.video)}" title="公式サンプル" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+ if(x.video&&safeHttp(x.video))return `<a class="media-link" href="https://www.dmm.co.jp/litevideo/-/detail/=/cid=${esc(x.id)}/" target="_blank" rel="noopener">${x.image?`<img class="media" src="${esc(x.image)}" alt="">`:''}<span class="play-badge">▶ サンプルを再生</span></a>`;
  return `<div class="no-video">${x.image?`<img class="poster" src="${esc(x.image)}" alt="">`:''}<div><div style="font-size:38px">▶</div><strong>${esc(x.title)}</strong><small>この作品には再生可能なサンプル動画URLがありません</small></div></div>`;
 }
 function render(){
