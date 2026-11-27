@@ -99,7 +99,7 @@ function safeHttp(s){try{return new URL(s).protocol==='https:'}catch{return fals
 function mediaMarkup(x){
  if(x.video&&safeHttp(x.video)&&/\.(mp4|webm)(\?|#|$)/i.test(x.video))
   return `<video class="media" src="${esc(x.video)}" ${x.image?`poster="${esc(x.image)}"`:''} muted playsinline loop preload="metadata"></video>`;
- if(x.video&&safeHttp(x.video))return `<div class="player-wrap"><iframe class="player-frame" src="${esc(x.video)}" title="公式サンプル" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>${x.image?`<img class="cover-fill" src="${esc(x.image)}" alt="">`:''}</div>`;
+ if(x.video&&safeHttp(x.video))return `<iframe class="player-frame" src="${esc(x.video)}" title="公式サンプル" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
  return `<div class="no-video">${x.image?`<img class="poster" src="${esc(x.image)}" alt="">`:''}<div><div style="font-size:38px">▶</div><strong>${esc(x.title)}</strong><small>この作品には再生可能なサンプル動画URLがありません</small></div></div>`;
 }
 function render(){
