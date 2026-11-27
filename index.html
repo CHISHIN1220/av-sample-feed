@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09090d">
+<title>AV SAMPLE FEED</title>
+<style>
+:root{color-scheme:dark;--bg:#09090d;--panel:#17171f;--muted:#aaaab6;--line:#30303a;--pink:#ff4d87}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:var(--bg);color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+#age{position:fixed;inset:0;z-index:50;background:#09090d;display:grid;place-items:center;padding:24px;text-align:center}
+.panel{max-width:430px;background:var(--panel);padding:28px;border:1px solid var(--line);border-radius:24px}
+.primary{border:0;border-radius:999px;background:var(--pink);color:#fff;font-weight:750;padding:12px 20px}
+.secondary{border:1px solid var(--line);border-radius:999px;background:#24242d;color:#fff;padding:10px 15px}
+.muted,.hint{color:var(--muted);font-size:12px;line-height:1.65}
+.top{position:fixed;z-index:10;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top) + 10px) 15px 28px;background:linear-gradient(#08080de8,transparent);display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+.top>*{pointer-events:auto}.brand{font-size:13px;font-weight:900;letter-spacing:.12em}.brand span{color:var(--pink)}
+.top button{border:1px solid #ffffff30;background:#171720d9;color:white;border-radius:22px;padding:8px 12px}
+.feed{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior-y:contain}
+.card{height:100dvh;min-height:480px;position:relative;scroll-snap-align:start;display:flex;align-items:center;justify-content:center;padding:64px 10px 74px;background:radial-gradient(ellipse at center,#241c27,#09090d 70%)}
+.stage{height:100%;width:min(100%,620px);position:relative;overflow:hidden;background:#08080b;border:1px solid #ffffff16;border-radius:18px;display:grid;place-items:center}
+.media{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#08080b}
+.poster{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.35}
+.no-video{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:28px;background:linear-gradient(145deg,#30212d,#12121a 65%)}
+.no-video strong{display:block;font-size:20px;margin:10px 0}.no-video small{color:#ddd}
+.info{position:absolute;z-index:3;left:0;right:0;bottom:0;padding:65px 16px 16px;background:linear-gradient(transparent,#050508ed)}
+.source{font-size:11px;color:#ffb5cc;margin-bottom:6px}.title{font-size:16px;font-weight:800;line-height:1.4}.meta{font-size:11px;color:#d0ccd2;margin-top:5px}
+.actions{position:absolute;z-index:4;right:10px;bottom:125px;display:flex;flex-direction:column;gap:14px;align-items:center}
+.action{width:45px;height:45px;border:0;border-radius:50%;background:#17171fce;color:#fff;font-size:21px;backdrop-filter:blur(8px)}
+.action.on{color:#ff5b93}.action-label{font-size:10px;text-shadow:0 1px 5px #000}
+.open-link{display:inline-block;margin-top:10px;color:white;text-decoration:none;background:#ffffff20;border:1px solid #ffffff50;border-radius:20px;padding:8px 12px;font-size:11px}
+.bottom{position:fixed;z-index:11;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:25px;padding:10px 10px calc(env(safe-area-inset-bottom) + 8px);background:linear-gradient(transparent,#09090df2 35%)}
+.bottom button{background:none;border:0;color:#ddd;font-size:10px;display:grid;gap:3px;justify-items:center}.bottom b{font-size:20px}
+.status{position:fixed;z-index:12;left:50%;top:calc(env(safe-area-inset-top) + 52px);transform:translateX(-50%);background:#222b;padding:7px 12px;border-radius:18px;font-size:11px;white-space:nowrap}
+.sheet{position:fixed;z-index:30;inset:0;background:#000b;display:flex;align-items:flex-end;justify-content:center}
+.sheetbox{width:min(100%,560px);max-height:88dvh;overflow:auto;background:#17171f;border:1px solid var(--line);border-radius:22px 22px 0 0;padding:20px 18px calc(env(safe-area-inset-bottom) + 20px)}
+.sheetbox h2{margin:0 0 14px;font-size:19px}.field{display:grid;gap:6px;margin:12px 0}.field label{font-size:12px;color:#ccc}
+.field input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#0d0d13;color:white}
+.row{display:flex;gap:9px}.row>*{flex:1}.toast{position:fixed;z-index:60;bottom:90px;left:50%;transform:translateX(-50%);background:#30303a;padding:10px 15px;border-radius:20px;font-size:12px;max-width:90%;text-align:center}
+@media(orientation:landscape){
+ .card{padding:46px 82px 48px}.stage{width:min(100%,1100px);height:calc(100dvh - 94px)}
+ .actions{right:max(15px,calc((100vw - 1100px)/2 - 60px));bottom:105px}
+ .info{padding:48px 20px 13px}.bottom{left:auto;right:10px;top:50%;bottom:auto;transform:translateY(-50%);flex-direction:column;background:#09090d99;border-radius:18px}
+ .top{padding-top:9px}
+}
+</style>
+</head>
+<body>
+<div id="age"><div class="panel"><div style="font-size:34px">🔞</div><h1>AV SAMPLE FEED</h1><p class="muted">18歳以上の方を対象とした、公式に提供されたサンプル作品の閲覧用アプリです。</p><p class="muted">あなたは18歳以上ですか？</p><div class="row" style="margin-top:18px"><button class="primary" id="yes">18歳以上</button><button class="secondary" id="no">いいえ</button></div></div></div>
+<header class="top"><div class="brand">AV SAMPLE <span>FEED</span></div><div style="display:flex;gap:7px"><button id="addItem">＋作品登録</button><button id="refresh">↻ 新着を取得</button></div></header>
+<div class="status" id="status">API未接続 · 設定から接続先を登録</div>
+<main class="feed" id="feed"><section class="card"><div class="stage"><div class="no-video"><div><div style="font-size:40px">▶</div><div style="letter-spacing:.2em;color:#ffb5cc;font-size:11px">OFFICIAL SAMPLE FEED</div><strong>新着サンプルを読み込もう</strong><small>「＋作品登録」から公式サンプルを追加できます。APIは後から接続できます。</small></div></div></div></section></main>
+<nav class="bottom"><button id="home"><b>⌂</b>おすすめ</button><button id="favorites"><b>♡</b>お気に入り</button><button id="search"><b>⌕</b>検索</button><button id="settings"><b>⚙</b>設定</button></nav>
+<div id="sheet" class="sheet hidden"><div class="sheetbox"><div style="display:flex;justify-content:space-between;align-items:center"><h2>接続・アプリ設定</h2><button class="secondary" id="close">閉じる</button></div>
+<div class="field"><label>APIサーバーURL（Cloudflare Worker等）</label><input id="apiBase" type="url" placeholder="https://your-worker.example.workers.dev"></div>
+<p class="hint">API IDとアフィリエイトIDはHTMLやiPhone側には保存しません。サーバー側の環境変数に設定してください。ここにはAPIサーバーの公開URLだけを入力します。</p>
+<div class="row"><button class="primary" id="saveSettings">接続先を保存</button><button class="secondary" id="testApi">接続テスト</button></div>
+<hr style="border-color:#30303a;margin:18px 0">
+<p class="hint">お気に入りと表示設定はこの端末のブラウザ内に保存されます。SafariのWebサイトデータを消去すると失われる場合があります。</p>
+</div></div>
+
+<div id="manualSheet" class="sheet hidden"><div class="sheetbox">
+<div style="display:flex;justify-content:space-between;align-items:center"><h2>作品を手動登録</h2><button class="secondary" id="manualClose">閉じる</button></div>
+<p class="hint">公式サイトで掲載・共有が許可されているサンプル動画URL、またはご自身が利用権限を持つ動画だけを登録してください。</p>
+<div class="field"><label>作品タイトル（必須）</label><input id="mTitle" maxlength="160" placeholder="作品タイトル"></div>
+<div class="field"><label>出演者</label><input id="mPerformer" maxlength="100" placeholder="出演者名"></div>
+<div class="field"><label>メーカー</label><input id="mMaker" maxlength="100" placeholder="メーカー名"></div>
+<div class="field"><label>サンプル動画URL（MP4 / WebM / 公式埋め込みURL）</label><input id="mVideo" type="url" placeholder="https://..."></div>
+<div class="field"><label>サムネイル画像URL（任意）</label><input id="mImage" type="url" placeholder="https://..."></div>
+<div class="field"><label>公式作品ページURL（必須）</label><input id="mLink" type="url" placeholder="https://..."></div>
+<div class="row"><button class="primary" id="manualSave">登録してフィードに追加</button><button class="secondary" id="manualClear">入力クリア</button></div>
+</div></div>
+
+<div id="toast" class="toast hidden"></div>
+<script>
+const $=s=>document.querySelector(s);
+let items=[], favOnly=false, query='', apiBase=localStorage.getItem('avfeed_api')||'';
+let favorites=new Set(JSON.parse(localStorage.getItem('avfeed_favs')||'[]'));
+let activeObserver=null;
+$('#yes').onclick=()=>{$('#age').remove();$('#apiBase').value=apiBase;loadCached()};
+$('#no').onclick=()=>{document.body.innerHTML='<div style="padding:40px;text-align:center">このアプリは18歳以上の方向けです。</div>'};
+function toast(s){$('#toast').textContent=s;$('#toast').classList.remove('hidden');setTimeout(()=>$('#toast').classList.add('hidden'),2500)}
+function setStatus(s){$('#status').textContent=s}
+function saveFavs(){localStorage.setItem('avfeed_favs',JSON.stringify([...favorites]))}
+function normalize(x,i){
+ const sample=x.sampleMovieURL||x.sample_movie_url||x.sampleMovieUrl||{};
+ const video=typeof sample==='string'?sample:(sample.size_720_480||sample.size_560_360||sample.size_476_306||sample.size_644_用||Object.values(sample).find(v=>typeof v==='string'&&/^https:/i.test(v))||'');
+ const image=x.imageURL?.large||x.imageURL?.list||x.image_url||'';
+ return {id:String(x.content_id||x.product_id||x.id||i),title:x.title||'タイトル不明',performer:(x.iteminfo?.actress||x.actresses||[]).map?.(a=>a.name||a).join('、')||'',maker:(x.iteminfo?.maker||[]).map?.(a=>a.name||a).join('、')||'',url:x.affiliateURL||x.affiliate_url||x.URL||x.url||'',video,image,release:x.date||x.release_date||'',source:'FANZA'};
+}
+function loadCached(){try{const c=JSON.parse(localStorage.getItem('avfeed_cache')||'[]');if(c.length){items=c;render()}}catch{}}
+async function fetchNew(){
+ if(!apiBase){toast('先に設定からAPIサーバーURLを登録してください');$('#sheet').classList.remove('hidden');return}
+ $('#refresh').disabled=true;setStatus('FANZA新着を取得中…');
+ try{
+  const u=new URL('/api/new',apiBase);u.searchParams.set('hits','30');
+  const r=await fetch(u,{headers:{'Accept':'application/json'}});
+  if(!r.ok)throw new Error('APIエラー '+r.status);
+  const data=await r.json();const raw=data.items||data.result?.items||[];
+  items=raw.map(normalize).filter(x=>x.title&&x.url);
+  localStorage.setItem('avfeed_cache',JSON.stringify(items));
+  render();setStatus('新着 '+items.length+'件 · FANZA API');
+  if(!items.length)toast('作品がありません。API設定・検索条件を確認してください');else toast(items.length+'件の新着作品を取得しました');
+ }catch(e){setStatus('取得に失敗');toast('取得できませんでした：'+e.message)}
+ finally{$('#refresh').disabled=false}
+}
+function esc(s=''){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function safeHttp(s){try{return new URL(s).protocol==='https:'}catch{return false}}
+function mediaMarkup(x){
+ if(x.video&&safeHttp(x.video)&&/\.(mp4|webm)(\?|#|$)/i.test(x.video))
+  return `<video class="media" src="${esc(x.video)}" ${x.image?`poster="${esc(x.image)}"`:''} muted playsinline loop preload="metadata"></video>`;
+ if(x.video&&safeHttp(x.video))return `<iframe class="media" src="${esc(x.video)}" title="公式サンプル" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+ return `<div class="no-video">${x.image?`<img class="poster" src="${esc(x.image)}" alt="">`:''}<div><div style="font-size:38px">▶</div><strong>${esc(x.title)}</strong><small>この作品には再生可能なサンプル動画URLがありません</small></div></div>`;
+}
+function render(){
+ const list=items.filter(x=>(!favOnly||favorites.has(x.id))&&(!query||(x.title+x.performer+x.maker).toLowerCase().includes(query.toLowerCase())));
+ if(!list.length){$('#feed').innerHTML=`<section class="card"><div class="stage"><div class="no-video"><div><strong>${favOnly?'お気に入りはまだありません':query?'該当する作品がありません':'作品がありません'}</strong><small>「新着を取得」からFANZAの作品を読み込めます。</small></div></div></div></section>`;return}
+ $('#feed').innerHTML=list.map(x=>`<section class="card" data-card="${esc(x.id)}"><div class="stage">${mediaMarkup(x)}<div class="info"><div class="source">${esc(x.source)} · OFFICIAL SAMPLE</div><div class="title">${esc(x.title)}</div><div class="meta">${esc([x.performer,x.maker,x.release].filter(Boolean).join(' · '))}</div>${safeHttp(x.url)?`<a class="open-link" href="${esc(x.url)}" target="_blank" rel="noopener">公式販売ページを見る ↗</a>`:''}</div></div><div class="actions"><div><button class="action ${favorites.has(x.id)?'on':''}" data-fav="${esc(x.id)}">${favorites.has(x.id)?'♥':'♡'}</button><div class="action-label">お気に入り</div></div><div><button class="action" data-share="${esc(x.id)}">↗</button><div class="action-label">共有</div></div></div></section>`).join('');
+ $('#feed').querySelectorAll('[data-fav]').forEach(b=>b.onclick=()=>{let id=b.dataset.fav;favorites.has(id)?favorites.delete(id):favorites.add(id);saveFavs();render()});
+ $('#feed').querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>{let x=items.find(i=>i.id===b.dataset.share);if(x?.url)window.open(x.url,'_blank','noopener')});
+ observeVideos();
+}
+function observeVideos(){
+ if(activeObserver)activeObserver.disconnect();
+ activeObserver=new IntersectionObserver(entries=>entries.forEach(e=>{const v=e.target.querySelector('video');if(!v)return;if(e.isIntersecting&&e.intersectionRatio>.65){v.play().catch(()=>{})}else{v.pause()}}),{root:$('#feed'),threshold:[.2,.65,.9]});
+ $('#feed').querySelectorAll('video').forEach(v=>activeObserver.observe(v));
+}
+
+function validHttpsOrEmpty(v){if(!v)return true;try{return new URL(v).protocol==='https:'}catch{return false}}
+function clearManual(){['mTitle','mPerformer','mMaker','mVideo','mImage','mLink'].forEach(id=>$('#'+id).value='')}
+$('#addItem').onclick=()=>{$('#manualSheet').classList.remove('hidden')};
+$('#manualClose').onclick=()=>$('#manualSheet').classList.add('hidden');
+$('#manualSheet').onclick=e=>{if(e.target===$('#manualSheet'))$('#manualSheet').classList.add('hidden')};
+$('#manualClear').onclick=clearManual;
+$('#manualSave').onclick=()=>{
+ const title=$('#mTitle').value.trim(), video=$('#mVideo').value.trim(), image=$('#mImage').value.trim(), link=$('#mLink').value.trim();
+ if(!title||!link){toast('作品タイトルと公式作品ページURLは必須です');return}
+ if(!validHttpsOrEmpty(video)||!validHttpsOrEmpty(image)||!validHttpsOrEmpty(link)){toast('URLはhttps://から始まるものを入力してください');return}
+ const item={id:'manual-'+Date.now(),title,performer:$('#mPerformer').value.trim(),maker:$('#mMaker').value.trim(),video,image,url:link,release:new Date().toLocaleDateString('ja-JP'),source:'手動登録'};
+ items.unshift(item);localStorage.setItem('avfeed_cache',JSON.stringify(items));favOnly=false;query='';render();$('#feed').scrollTo(0,0);$('#manualSheet').classList.add('hidden');clearManual();toast('作品を登録しました');
+};
+
+$('#refresh').onclick=fetchNew;
+$('#home').onclick=()=>{favOnly=false;query='';render();$('#feed').scrollTo(0,0)};
+$('#favorites').onclick=()=>{favOnly=!favOnly;render();$('#feed').scrollTo(0,0)};
+$('#search').onclick=()=>{const q=prompt('作品名・出演者・メーカーで検索');if(q!==null){query=q;favOnly=false;render();$('#feed').scrollTo(0,0)}};
+$('#settings').onclick=()=>{$('#apiBase').value=apiBase;$('#sheet').classList.remove('hidden')};
+$('#close').onclick=()=>$('#sheet').classList.add('hidden');
+$('#sheet').onclick=e=>{if(e.target===$('#sheet'))$('#sheet').classList.add('hidden')};
+$('#saveSettings').onclick=()=>{const v=$('#apiBase').value.trim().replace(/\/+$/,'');if(v&&!safeHttp(v)){toast('https:// から始まるURLを入力してください');return}apiBase=v;localStorage.setItem('avfeed_api',apiBase);$('#sheet').classList.add('hidden');toast('接続先を保存しました')};
+$('#testApi').onclick=async()=>{apiBase=$('#apiBase').value.trim().replace(/\/+$/,'');if(!safeHttp(apiBase)){toast('有効なhttps:// URLを入力してください');return}try{const r=await fetch(new URL('/api/health',apiBase));if(!r.ok)throw Error('HTTP '+r.status);toast('APIサーバーに接続できました')}catch(e){toast('接続できません：'+e.message)}};
+</script>
+</body></html>
