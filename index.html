@@ -48,9 +48,9 @@ button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 </head>
 <body>
 <div id="age"><div class="panel"><div style="font-size:34px">🔞</div><h1>AV SAMPLE FEED</h1><p class="muted">18歳以上の方を対象とした、公式に提供されたサンプル作品の閲覧用アプリです。</p><p class="muted">あなたは18歳以上ですか？</p><div class="row" style="margin-top:18px"><button class="primary" id="yes">18歳以上</button><button class="secondary" id="no">いいえ</button></div></div></div>
-<header class="top"><div class="brand">AV SAMPLE <span>FEED</span></div><div style="display:flex;gap:7px"><button id="addItem">＋作品登録</button><button id="refresh">↻ 新着を取得</button></div></header>
+<header class="top"><div class="brand">AV SAMPLE <span>FEED</span></div><div style="display:flex;gap:7px"><button id="refresh">↻ 新着を取得</button></div></header>
 <div class="status" id="status">API未接続 · 設定から接続先を登録</div>
-<main class="feed" id="feed"><section class="card"><div class="stage"><div class="no-video"><div><div style="font-size:40px">▶</div><div style="letter-spacing:.2em;color:#ffb5cc;font-size:11px">OFFICIAL SAMPLE FEED</div><strong>新着サンプルを読み込もう</strong><small>「＋作品登録」から公式サンプルを追加できます。APIは後から接続できます。</small></div></div></div></section></main>
+<main class="feed" id="feed"><section class="card"><div class="stage"><div class="no-video"><div><div style="font-size:40px">▶</div><div style="letter-spacing:.2em;color:#ffb5cc;font-size:11px">OFFICIAL SAMPLE FEED</div><strong>新着サンプルを読み込もう</strong><small>「新着を取得」からFANZAの作品を読み込めます。APIは後から接続できます。</small></div></div></div></section></main>
 <nav class="bottom"><button id="home"><b>⌂</b>おすすめ</button><button id="favorites"><b>♡</b>お気に入り</button><button id="search"><b>⌕</b>検索</button><button id="settings"><b>⚙</b>設定</button></nav>
 <div id="sheet" class="sheet hidden"><div class="sheetbox"><div style="display:flex;justify-content:space-between;align-items:center"><h2>接続・アプリ設定</h2><button class="secondary" id="close">閉じる</button></div>
 <div class="field"><label>APIサーバーURL（Cloudflare Worker等）</label><input id="apiBase" type="url" placeholder="https://your-worker.example.workers.dev"></div>
@@ -58,18 +58,6 @@ button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 <div class="row"><button class="primary" id="saveSettings">接続先を保存</button><button class="secondary" id="testApi">接続テスト</button></div>
 <hr style="border-color:#30303a;margin:18px 0">
 <p class="hint">お気に入りと表示設定はこの端末のブラウザ内に保存されます。SafariのWebサイトデータを消去すると失われる場合があります。</p>
-</div></div>
-
-<div id="manualSheet" class="sheet hidden"><div class="sheetbox">
-<div style="display:flex;justify-content:space-between;align-items:center"><h2>作品を手動登録</h2><button class="secondary" id="manualClose">閉じる</button></div>
-<p class="hint">公式サイトで掲載・共有が許可されているサンプル動画URL、またはご自身が利用権限を持つ動画だけを登録してください。</p>
-<div class="field"><label>作品タイトル（必須）</label><input id="mTitle" maxlength="160" placeholder="作品タイトル"></div>
-<div class="field"><label>出演者</label><input id="mPerformer" maxlength="100" placeholder="出演者名"></div>
-<div class="field"><label>メーカー</label><input id="mMaker" maxlength="100" placeholder="メーカー名"></div>
-<div class="field"><label>サンプル動画URL（MP4 / WebM / 公式埋め込みURL）</label><input id="mVideo" type="url" placeholder="https://..."></div>
-<div class="field"><label>サムネイル画像URL（任意）</label><input id="mImage" type="url" placeholder="https://..."></div>
-<div class="field"><label>公式作品ページURL（必須）</label><input id="mLink" type="url" placeholder="https://..."></div>
-<div class="row"><button class="primary" id="manualSave">登録してフィードに追加</button><button class="secondary" id="manualClear">入力クリア</button></div>
 </div></div>
 
 <div id="toast" class="toast hidden"></div>
@@ -127,20 +115,6 @@ function observeVideos(){
  activeObserver=new IntersectionObserver(entries=>entries.forEach(e=>{const v=e.target.querySelector('video');if(!v)return;if(e.isIntersecting&&e.intersectionRatio>.65){v.play().catch(()=>{})}else{v.pause()}}),{root:$('#feed'),threshold:[.2,.65,.9]});
  $('#feed').querySelectorAll('video').forEach(v=>activeObserver.observe(v));
 }
-
-function validHttpsOrEmpty(v){if(!v)return true;try{return new URL(v).protocol==='https:'}catch{return false}}
-function clearManual(){['mTitle','mPerformer','mMaker','mVideo','mImage','mLink'].forEach(id=>$('#'+id).value='')}
-$('#addItem').onclick=()=>{$('#manualSheet').classList.remove('hidden')};
-$('#manualClose').onclick=()=>$('#manualSheet').classList.add('hidden');
-$('#manualSheet').onclick=e=>{if(e.target===$('#manualSheet'))$('#manualSheet').classList.add('hidden')};
-$('#manualClear').onclick=clearManual;
-$('#manualSave').onclick=()=>{
- const title=$('#mTitle').value.trim(), video=$('#mVideo').value.trim(), image=$('#mImage').value.trim(), link=$('#mLink').value.trim();
- if(!title||!link){toast('作品タイトルと公式作品ページURLは必須です');return}
- if(!validHttpsOrEmpty(video)||!validHttpsOrEmpty(image)||!validHttpsOrEmpty(link)){toast('URLはhttps://から始まるものを入力してください');return}
- const item={id:'manual-'+Date.now(),title,performer:$('#mPerformer').value.trim(),maker:$('#mMaker').value.trim(),video,image,url:link,release:new Date().toLocaleDateString('ja-JP'),source:'手動登録'};
- items.unshift(item);localStorage.setItem('avfeed_cache',JSON.stringify(items));favOnly=false;query='';render();$('#feed').scrollTo(0,0);$('#manualSheet').classList.add('hidden');clearManual();toast('作品を登録しました');
-};
 
 $('#refresh').onclick=fetchNew;
 $('#home').onclick=()=>{favOnly=false;query='';render();$('#feed').scrollTo(0,0)};
