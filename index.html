@@ -98,7 +98,7 @@ async function fetchNew(){
   const r=await fetch(u,{headers:{'Accept':'application/json'}});
   if(!r.ok)throw new Error('APIエラー '+r.status);
   const data=await r.json();const raw=data.items||data.result?.items||[];
-  items=raw.map(normalize).filter(x=>x.title&&x.url);
+  items=raw.map(normalize).filter(x=>x.title&&x.url&&x.video);
   localStorage.setItem('avfeed_cache',JSON.stringify(items));
   render();setStatus('新着 '+items.length+'件 · FANZA API');
   if(!items.length)toast('作品がありません。API設定・検索条件を確認してください');else toast(items.length+'件の新着作品を取得しました');
@@ -114,7 +114,7 @@ function mediaMarkup(x){
  return `<div class="no-video">${x.image?`<img class="poster" src="${esc(x.image)}" alt="">`:''}<div><div style="font-size:38px">▶</div><strong>${esc(x.title)}</strong><small>この作品には再生可能なサンプル動画URLがありません</small></div></div>`;
 }
 function render(){
- const list=items.filter(x=>(!favOnly||favorites.has(x.id))&&(!query||(x.title+x.performer+x.maker).toLowerCase().includes(query.toLowerCase())));
+ const list=items.filter(x=>x.video&&(!favOnly||favorites.has(x.id))&&(!query||(x.title+x.performer+x.maker).toLowerCase().includes(query.toLowerCase())));
  if(!list.length){$('#feed').innerHTML=`<section class="card"><div class="stage"><div class="no-video"><div><strong>${favOnly?'お気に入りはまだありません':query?'該当する作品がありません':'作品がありません'}</strong><small>「新着を取得」からFANZAの作品を読み込めます。</small></div></div></div></section>`;return}
  $('#feed').innerHTML=list.map(x=>`<section class="card" data-card="${esc(x.id)}"><div class="stage">${mediaMarkup(x)}<div class="info"><div class="source">${esc(x.source)} · OFFICIAL SAMPLE</div><div class="title">${esc(x.title)}</div><div class="meta">${esc([x.performer,x.maker,x.release].filter(Boolean).join(' · '))}</div>${safeHttp(x.url)?`<a class="open-link" href="${esc(x.url)}" target="_blank" rel="noopener">公式販売ページを見る ↗</a>`:''}</div></div><div class="actions"><div><button class="action ${favorites.has(x.id)?'on':''}" data-fav="${esc(x.id)}">${favorites.has(x.id)?'♥':'♡'}</button><div class="action-label">お気に入り</div></div><div><button class="action" data-share="${esc(x.id)}">↗</button><div class="action-label">共有</div></div></div></section>`).join('');
  $('#feed').querySelectorAll('[data-fav]').forEach(b=>b.onclick=()=>{let id=b.dataset.fav;favorites.has(id)?favorites.delete(id):favorites.add(id);saveFavs();render()});
