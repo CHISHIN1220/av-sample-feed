@@ -30,7 +30,7 @@ button,input{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 .action{width:45px;height:45px;border:0;border-radius:50%;background:#17171fce;color:#fff;font-size:21px;backdrop-filter:blur(8px)}
 .action.on{color:#ff5b93}.action-label{font-size:10px;text-shadow:0 1px 5px #000}
 .open-link{display:inline-block;margin-top:10px;color:white;text-decoration:none;background:#ffffff20;border:1px solid #ffffff50;border-radius:20px;padding:8px 12px;font-size:11px}
-.bottom{position:fixed;z-index:11;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:25px;padding:10px 10px calc(env(safe-area-inset-bottom) + 8px);background:linear-gradient(transparent,#09090df2 35%)}
+.player-facade{position:absolute;inset:0;background:#000;cursor:pointer}.player-facade img{width:100%;height:100%;object-fit:cover;display:block}.play-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:#000000a6;color:#fff;display:grid;place-items:center;font-size:24px}.bottom{position:fixed;z-index:11;bottom:0;left:0;right:0;display:flex;justify-content:center;gap:25px;padding:10px 10px calc(env(safe-area-inset-bottom) + 8px);background:linear-gradient(transparent,#09090df2 35%)}
 .bottom button{background:none;border:0;color:#ddd;font-size:10px;display:grid;gap:3px;justify-items:center}.bottom b{font-size:20px}
 .status{position:fixed;z-index:12;left:50%;top:calc(env(safe-area-inset-top) + 52px);transform:translateX(-50%);background:#222b;padding:7px 12px;border-radius:18px;font-size:11px;white-space:nowrap}
 .sheet{position:fixed;z-index:30;inset:0;background:#000b;display:flex;align-items:flex-end;justify-content:center}
@@ -99,7 +99,7 @@ function safeHttp(s){try{return new URL(s).protocol==='https:'}catch{return fals
 function mediaMarkup(x){
  if(x.video&&safeHttp(x.video)&&/\.(mp4|webm)(\?|#|$)/i.test(x.video))
   return `<video class="media" src="${esc(x.video)}" ${x.image?`poster="${esc(x.image)}"`:''} muted playsinline loop preload="metadata"></video>`;
- if(x.video&&safeHttp(x.video))return `<iframe class="media" src="${esc(x.video)}" title="公式サンプル" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+ if(x.video&&safeHttp(x.video))return `<div class="player-facade" data-player="${esc(x.video)}">${x.image?`<img src="${esc(x.image)}" alt="">`:""}<span class="play-badge">▶</span></div>`;
  return `<div class="no-video">${x.image?`<img class="poster" src="${esc(x.image)}" alt="">`:''}<div><div style="font-size:38px">▶</div><strong>${esc(x.title)}</strong><small>この作品には再生可能なサンプル動画URLがありません</small></div></div>`;
 }
 function render(){
@@ -107,6 +107,7 @@ function render(){
  if(!list.length){$('#feed').innerHTML=`<section class="card"><div class="stage"><div class="no-video"><div><strong>${favOnly?'お気に入りはまだありません':query?'該当する作品がありません':'作品がありません'}</strong><small>「新着を取得」からFANZAの作品を読み込めます。</small></div></div></div></section>`;return}
  $('#feed').innerHTML=list.map(x=>`<section class="card" data-card="${esc(x.id)}"><div class="stage">${mediaMarkup(x)}<div class="info"><div class="source">${esc(x.source)} · OFFICIAL SAMPLE</div><div class="title">${esc(x.title)}</div><div class="meta">${esc([x.performer,x.maker,x.release].filter(Boolean).join(' · '))}</div>${safeHttp(x.url)?`<a class="open-link" href="${esc(x.url)}" target="_blank" rel="noopener">公式販売ページを見る ↗</a>`:''}</div></div><div class="actions"><div><button class="action ${favorites.has(x.id)?'on':''}" data-fav="${esc(x.id)}">${favorites.has(x.id)?'♥':'♡'}</button><div class="action-label">お気に入り</div></div><div><button class="action" data-share="${esc(x.id)}">↗</button><div class="action-label">共有</div></div></div></section>`).join('');
  $('#feed').querySelectorAll('[data-fav]').forEach(b=>b.onclick=()=>{let id=b.dataset.fav;favorites.has(id)?favorites.delete(id):favorites.add(id);saveFavs();render()});
+ $('#feed').querySelectorAll('.player-facade').forEach(f=>f.onclick=()=>{const ifr=document.createElement('iframe');ifr.className='media';ifr.src=f.dataset.player;ifr.title='公式サンプル';ifr.setAttribute('allow','autoplay; fullscreen; picture-in-picture');ifr.setAttribute('allowfullscreen','');ifr.setAttribute('referrerpolicy','strict-origin-when-cross-origin');f.replaceWith(ifr)});
  $('#feed').querySelectorAll('[data-share]').forEach(b=>b.onclick=()=>{let x=items.find(i=>i.id===b.dataset.share);if(x?.url)window.open(x.url,'_blank','noopener')});
  observeVideos();
 }
