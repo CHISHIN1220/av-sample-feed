@@ -99,7 +99,7 @@ function safeHttp(s){try{return new URL(s).protocol==='https:'}catch{return fals
 function mediaMarkup(x){
  if(x.video&&safeHttp(x.video)&&/\.(mp4|webm)(\?|#|$)/i.test(x.video))
   return `<video class="media" src="${esc(x.video)}" ${x.image?`poster="${esc(x.image)}"`:''} muted playsinline loop preload="metadata"></video>`;
- if(x.video&&safeHttp(x.video))return `${x.image?`<img class="poster" style="opacity:.6" src="${esc(x.image)}" alt="">`:''}<iframe class="media" data-src="${esc(x.video)}" title="公式サンプル" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+ if(x.video&&safeHttp(x.video))return `<iframe class="media" src="${esc(x.video)}" title="公式サンプル" loading="lazy" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
  return `<div class="no-video">${x.image?`<img class="poster" src="${esc(x.image)}" alt="">`:''}<div><div style="font-size:38px">▶</div><strong>${esc(x.title)}</strong><small>この作品には再生可能なサンプル動画URLがありません</small></div></div>`;
 }
 function render(){
@@ -112,14 +112,8 @@ function render(){
 }
 function observeVideos(){
  if(activeObserver)activeObserver.disconnect();
- activeObserver=new IntersectionObserver(entries=>entries.forEach(e=>{
-  const card=e.target;
-  const f=card.querySelector('iframe[data-src]');
-  if(f&&e.isIntersecting){f.src=f.dataset.src;f.removeAttribute('data-src')}
-  const v=card.querySelector('video');
-  if(v){if(e.isIntersecting&&e.intersectionRatio>.65){v.play().catch(()=>{})}else{v.pause()}}
- }),{root:$('#feed'),rootMargin:'80% 0px 80% 0px',threshold:[0,.65]});
- document.querySelectorAll('.card').forEach(c=>activeObserver.observe(c));
+ activeObserver=new IntersectionObserver(entries=>entries.forEach(e=>{const v=e.target;if(e.isIntersecting&&e.intersectionRatio>.65){v.play().catch(()=>{})}else{v.pause()}}),{root:$('#feed'),threshold:[.2,.65,.9]});
+ document.querySelectorAll('video').forEach(v=>activeObserver.observe(v));
 }
 
 $('#refresh').onclick=fetchNew;
